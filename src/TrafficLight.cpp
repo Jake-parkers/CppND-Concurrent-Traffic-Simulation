@@ -2,6 +2,10 @@
 #include <random>
 #include "TrafficLight.h"
 
+std::random_device rand_device;
+std::mt19937 rnd {rand_device()};
+std::uniform_real_distribution<double> dist(4.0, 6.0);
+
 /* Implementation of class "MessageQueue" */
 
 /* */
@@ -43,7 +47,6 @@ void TrafficLight::waitForGreen()
     // runs and repeatedly calls the receive function on the message queue. 
     // Once it receives TrafficLightPhase::green, the method returns.
     while (true) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         TrafficLightPhase phase = _msgQueue.receive();
         if (phase == TrafficLightPhase::green) return;
     }
@@ -66,15 +69,13 @@ void TrafficLight::cycleThroughPhases()
     // and toggles the current phase of the traffic light between red and green and sends an update method 
     // to the message queue using move semantics. The cycle duration should be a random value between 4 and 6 seconds. 
     // Also, the while-loop should use std::this_thread::sleep_for to wait 1ms between two cycles.
-    std::random_device rd;
-    std::mt19937 rnd {rd()};
-    std::uniform_real_distribution<> dist(4, 6);
-    int cycle_duration = dist(rnd);
+    double cycle_duration = dist(rnd);
     auto start_time = std::chrono::system_clock::now();
-
-    while (true) {
+    bool loop_cond = true;
+    double elapsed_time;
+    while (loop_cond) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        long elapsed_time = (std::chrono::system_clock::now() - start_time).count();
+        elapsed_time = (std::chrono::system_clock::now() - start_time).count();
         if (elapsed_time >= cycle_duration) {
             TrafficLightPhase phase = (_currentPhase == TrafficLightPhase::red) ? TrafficLightPhase::green : TrafficLightPhase::red;
             _currentPhase = phase;
